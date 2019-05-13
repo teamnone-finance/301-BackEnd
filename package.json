@@ -1,0 +1,26 @@
+{
+  "name": "301-backend",
+  "version": "1.0.0",
+  "description": "Finance Backend",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teamnone-finance/301-BackEnd.git"
+  },
+  "author": "Team None",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/teamnone-finance/301-BackEnd/issues"
+  },
+  "homepage": "https://github.com/teamnone-finance/301-BackEnd#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
+    "express": "^4.16.4",
+    "pg": "^7.11.0",
+    "superagent": "^5.0.5"
+  }
+}
