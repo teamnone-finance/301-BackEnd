@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS users, portfolios;
+
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  userName VARCHAR
+  
+);
+
+CREATE TABLE IF NOT EXISTS portfolios(
+  id SERIAL PRIMARY KEY,
+  user VARCHAR(255) REFERENCES users(userName)
+);
