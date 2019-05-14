@@ -35,6 +35,8 @@ app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
 app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 
+app.post('/stocks', createStock);
+
 
 //API call to alphavantage
 function getSymbol(request, response) {
@@ -113,11 +115,12 @@ function deletePortfolio(request, response) {
   return client.query(SQL, values).then(result => response.send(result));
 }
 
-function userDbQuery(username) {
-  const SQL = `SELECT * FROM users WHERE username = $1`;
-  const values = [username];
-  return client.query(SQL, values);
-}
+// CRUD for STOCK
 
+function createStock(request, response) {
+  const SQL = `INSERT INTO stocks (stock_symbol, portfolio_id) VALUES($1, $2)`;
+  const values = [request.query.stock, request.query.portfolio_id];
+  return client.query(SQL, values).then(result => response.send(result));
+}
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
