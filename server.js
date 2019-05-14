@@ -67,7 +67,7 @@ function createUser(request, response) {
 }
 
 function getUser(request, response) {
-  userDbQuery(request.query.data).then(result=> {
+  userDbQuery(request.query.username).then(result=> {
     response.send(result);
   });
 }
