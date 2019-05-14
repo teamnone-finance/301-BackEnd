@@ -21,4 +21,77 @@ app.get('/', (request, response) => {
   response.status(200).send('Connected!');
 });
 
+app.get('/get-symbol', getSymbol);
+
+
+// Database Operations
+
+app.get('/user', getUser);
+app.post('/user', createUser);
+
+app.get('/portfolio', getPortfolio);
+app.post('/portfolio', createPortfolio);
+app.post('/portfolio/edit=:portfolio_id', editPortfolio);
+app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
+
+
+//API call to alphavantage
+function getSymbol(request, response) {
+  const alphaGet = 'https://www.alphavantage.co/query';
+  return superagent(alphaGet)
+    .query(
+      {
+        function: 'TIME_SERIES_WEEKLY',
+        symbol: request.query.data,
+        apikey: process.env.ALPHA_API_KEY
+      })
+    .then(result => {
+      response.send(result.body);
+    });
+}
+
+
+// CR for user table
+function createUser(request, response) {
+  userDbQuery(request.query.data).then(result => {
+    if (result.rowCount === 0) {
+      const SQL = `INSERT INTO users (username) VALUES ($1)`;
+      const values = [request.query.data];
+      return client.query(SQL, values)
+        .then(result => response.send(result));
+    }
+  });
+}
+
+function getUser(request, response) {
+  userDbQuery(request.query.data).then(result=> {
+    response.send(result);
+  });
+}
+
+function userDbQuery(username) {
+  const SQL = `SELECT * FROM users WHERE username = $1`;
+  const values = [username];
+  return client.query(SQL, values);
+}
+
+
+// CRUD for portfolio
+function getPortfolio(request, response) {
+
+}
+
+function createPortfolio(request, response) {
+  
+}
+
+function editPortfolio(request, response) {
+  
+}
+
+function deletePortfolio(request, response) {
+  
+}
+
+
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
