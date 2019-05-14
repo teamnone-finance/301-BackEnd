@@ -29,7 +29,8 @@ app.get('/get-symbol', getSymbol);
 app.get('/user', getUser);
 app.post('/user', createUser);
 
-app.get('/portfolio', getPortfolio);
+app.get('/portfolio', getAllPortfolio);
+app.get('/portfolio/:portfolio_id', getUniquePortfolio);
 app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
 app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
@@ -77,7 +78,16 @@ function userDbQuery(username) {
 
 
 // CRUD for portfolio
-function getPortfolio(request, response) {
+function getAllPortfolio(request, response) {
+  const SQL = `SELECT * FROM portfolio WHERE portfolio.user_id = $1;`;
+  const values = [request.query.data];
+  return client.query(SQL, values).then(result => {
+    response.send(result);
+  });
+
+}
+
+function getUniquePortfolio(request, response) {
 
 }
 
@@ -91,6 +101,12 @@ function editPortfolio(request, response) {
 
 function deletePortfolio(request, response) {
   
+}
+
+function userDbQuery(username) {
+  const SQL = `SELECT * FROM users WHERE username = $1`;
+  const values = [username];
+  return client.query(SQL, values);
 }
 
 
