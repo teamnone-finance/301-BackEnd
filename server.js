@@ -56,10 +56,10 @@ function getSymbol(request, response) {
 
 // CR for user table
 function createUser(request, response) {
-  userDbQuery(request.query.data).then(result => {
+  userDbQuery(request.query.username).then(result => {
     if (result.rowCount === 0) {
       const SQL = `INSERT INTO users (username) VALUES ($1)`;
-      const values = [request.query.user];
+      const values = [request.query.username];
       return client.query(SQL, values)
         .then(result => response.send(result));
     }
