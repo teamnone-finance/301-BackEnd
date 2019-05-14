@@ -20,10 +20,6 @@ app.use(express.static('public'));
 app.get('/', (request, response) => {
   response.status(200).send('Connected!');
 });
-
-app.get('/get-symbol', getSymbol);
-
-
 // Database Operations
 
 app.get('/user', getUser);
@@ -35,24 +31,27 @@ app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
 app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 
+app.get('/get-stocks', getStock);
+
 app.post('/stocks', createStock);
 
 
 //API call to alphavantage
-function getSymbol(request, response) {
+function getStock(request, response) {
+  console.log(request.query);
   const alphaGet = 'https://www.alphavantage.co/query';
   return superagent(alphaGet)
     .query(
       {
-        function: 'TIME_SERIES_WEEKLY',
-        symbol: request.query.user,
+        function: 'TIME_SERIES_INTRADAY',
+        symbol: request.query.symbol,
+        interval: '5min',
         apikey: process.env.ALPHA_API_KEY
       })
     .then(result => {
       response.send(result.body);
     });
 }
-
 
 // CR for user table
 function createUser(request, response) {
@@ -67,7 +66,7 @@ function createUser(request, response) {
 }
 
 function getUser(request, response) {
-  userDbQuery(request.query.username).then(result=> {
+  userDbQuery(request.query.username).then(result => {
     response.send(result);
   });
 }
@@ -99,7 +98,7 @@ function getUniquePortfolio(request, response) {
 
 function createPortfolio(request, response) {
   const SQL = `INSERT INTO portfolio (portfolio_name, description, user_id) VALUES ($1, $2, $3)`;
-  const values = [request.query.portfolio_name, request.query.description, request.query.user_id];
+  const values = [request.query.portfolio_name, request.query.description, request.query.username];
   return client.query(SQL, values).then(result => response.send(result));
 }
 
