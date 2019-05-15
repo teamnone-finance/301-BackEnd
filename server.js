@@ -74,8 +74,8 @@ function getStockReport(request, response) {
   return superagent(alphaGet)
     .query(
       {
-        function: 'GLOBAL_QUOTES',
-        keywords: request.query.symbol,
+        function: 'GLOBAL_QUOTE',
+        symbol: request.query.symbol,
         apikey: process.env.ALPHA_API_KEY
       }
     )
