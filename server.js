@@ -33,7 +33,8 @@ app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 
 //middleman APIs
 app.get('/get-stocks-chart', getStockChartRapid);
-app.get('get-company', getCompanyName);
+app.get('/get-company', getCompanyName);
+app.get('/get-quote', getCompanyQuote);
 
 app.post('/stocks', createStock);
 
@@ -44,9 +45,13 @@ function getStockChartRapid(request, response) {
   rapidAPIRetrieval(url, response);
 }
 
+function getCompanyQuote(request, response) {
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/quote`;
+  rapidAPIRetrieval(url, response);
+}
 
 function getCompanyName(request, response) {
-  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/company/`;
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/company`;
   rapidAPIRetrieval(url, response);
 }
 
