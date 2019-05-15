@@ -70,6 +70,7 @@ function getStockLong(request, response) {
 }
 
 function getStockReport(request, response) {
+  const alphaGet = 'https://www.alphavantage.co/query';
   return superagent(alphaGet)
     .query(
       {
