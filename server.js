@@ -31,75 +31,38 @@ app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
 app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 
-
-//ALPHAVANTAGE API Calls
-app.get('/get-stocks-intraday', getStock);
-app.get('/get-stocks-monthly', getStockLong);
-app.get('/get-stocks-quote', getStockName);
-app.get('/get-stocks-summary', getStockReport);
+//middleman APIs
+app.get('/get-stocks-chart', getStockChartRapid);
+app.get('get-company', getCompanyName);
 
 app.post('/stocks', createStock);
 
 
-//API call to alphavantage
-function getStock(request, response) {
-  const alphaGet = 'https://www.alphavantage.co/query';
-  return superagent(alphaGet)
-    .query(
-      {
-        function: 'TIME_SERIES_INTRADAY',
-        symbol: request.query.symbol,
-        interval: '5min',
-        apikey: process.env.ALPHA_API_KEY
-      })
-    .then(result => response.send(result.body));
+//API call to Rapid
+function getStockChartRapid(request, response) {
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/chart/${request.query.time}`;
+  rapidAPIRetrieval(url, response);
 }
 
-function getStockLong(request, response) {
-  const alphaGet = 'https://www.alphavantage.co/query';
-  return superagent(alphaGet)
-    .query(
-      {
-        function: 'TIME_SERIES_MONTHLY',
-        symbol: request.query.symbol,
-        interval: '5min',
-        apikey: process.env.ALPHA_API_KEY
-      })
-    .then(result => response.send(result.body));
 
+function getCompanyName(request, response) {
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/company/`;
+  rapidAPIRetrieval(url, response);
 }
 
-function getStockReport(request, response) {
-  const alphaGet = 'https://www.alphavantage.co/query';
-  return superagent(alphaGet)
-    .query(
-      {
-        function: 'GLOBAL_QUOTE',
-        symbol: request.query.symbol,
-        apikey: process.env.ALPHA_API_KEY
-      }
-    )
-    .then(result => response.send(result.body));
-}
-
-function getStockName(request, response) {
-  const alphaGet = 'https://www.alphavantage.co/query';
-  return superagent(alphaGet)
-    .query(
-      {
-        function: 'SYMBOL_SEARCH',
-        keywords: request.query.symbol,
-        apikey: process.env.ALPHA_API_KEY
-      }
-    )
-    .then(result => response.send(result.body));
+function rapidAPIRetrieval(url, response) {
+  return superagent(url)
+    .set('X-RapidAPI-Host', 'investors-exchange-iex-trading.p.rapidapi.com')
+    .set('X-RapidAPI-Key', process.env.RAPID_API_KEY)
+    .then(result => response.send(result.body))
+    .catch(err => console.log(err));
 }
 
 // CR for user table
 function createUser(request, response) {
-  console.log('REQUEST FROM POST: ',request);
+  console.log('REQUEST FROM POST: ', request);
   userDbQuery(request.query.username).then(result => {
-    console.log('USERNAME FROM POST: ',request.query.username);
+    console.log('USERNAME FROM POST: ', request.query.username);
     if (result.rowCount === 0) {
       const SQL = `INSERT INTO users (username) VALUES ($1)`;
       const values = [request.query.username];
@@ -119,7 +82,7 @@ function getUser(request, response) {
 function userDbQuery(username) {
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
-  return client.query(SQL, values).catch((err)=>console.log('Error cath on query',err));
+  return client.query(SQL, values).catch((err) => console.log('Error cath on query', err));
 }
 
 
@@ -166,5 +129,15 @@ function createStock(request, response) {
   const values = [request.query.stock, request.query.portfolio_id];
   return client.query(SQL, values).then(result => response.send(result));
 }
+
+
+
+
+
+
+
+
+
+
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
