@@ -31,14 +31,18 @@ app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
 app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 
-app.get('/get-stocks', getStock);
+
+//ALPHAVANTAGE API Calls
+app.get('/get-stocks-intraday', getStock);
+app.get('/get-stocks-monthly', getStockLong);
+app.get('/get-stocks-quote', getStockName);
+app.get('/get-stock-summary', getStockReport);
 
 app.post('/stocks', createStock);
 
 
 //API call to alphavantage
 function getStock(request, response) {
-  console.log(request.query);
   const alphaGet = 'https://www.alphavantage.co/query';
   return superagent(alphaGet)
     .query(
@@ -48,9 +52,46 @@ function getStock(request, response) {
         interval: '5min',
         apikey: process.env.ALPHA_API_KEY
       })
-    .then(result => {
-      response.send(result.body);
-    });
+    .then(result => response.send(result.body));
+}
+
+function getStockLong(request, response) {
+  const alphaGet = 'https://www.alphavantage.co/query';
+  return superagent(alphaGet)
+    .query(
+      {
+        function: 'TIME_SERIES_MONTHLY',
+        symbol: request.query.symbol,
+        interval: '5min',
+        apikey: process.env.ALPHA_API_KEY
+      })
+    .then(result => response.send(result.body));
+
+}
+
+function getStockReport(request, response) {
+  return superagent(alphaGet)
+    .query(
+      {
+        function: 'GLOBAL_QUOTES',
+        keywords: request.query.symbol,
+        apikey: process.env.ALPHA_API_KEY
+      }
+    )
+    .then(result => response.send(result.body));
+}
+
+function getStockName(request, response) {
+  const alphaGet = 'https://www.alphavantage.co/query';
+  return superagent(alphaGet)
+    .query(
+      {
+        function: 'SYMBOL_SEARCH',
+        keywords: request.query.symbol,
+        apikey: process.env.ALPHA_API_KEY
+      }
+    )
+    .then(result => response.send(result.body));
 }
 
 // CR for user table
