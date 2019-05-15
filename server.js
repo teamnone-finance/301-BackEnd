@@ -26,6 +26,8 @@ app.get('/user', getUser);
 app.post('/user', createUser);
 
 app.get('/portfolio', getAllPortfolio);
+app.get('/stockinfo', getStockInfo);////////////////<---- NEW
+app.get('/stockdescription', getStockDescription);////////////////<---- NEW
 app.get('/portfolio/:portfolio_id', getUniquePortfolio);
 app.post('/portfolio', createPortfolio);
 app.post('/portfolio/edit=:portfolio_id', editPortfolio);
@@ -95,6 +97,49 @@ function getStockName(request, response) {
     .then(result => response.send(result.body));
 }
 
+function getStockInfo(request, response){
+  console.log(request.query);
+  const symbol = request.query.symbol;
+  const rapidGET = 'https://investors-exchange-iex-trading.p.rapidapi.com/stock/';
+
+  superagent(`${rapidGET}/${symbol}/quote`)
+    .set('X-RapidAPI-Host', process.env.X_RapidAPI_Host)
+    .set('X-RapidAPI-Key', process.env.X_RapidAPI_Key)
+    .then(result => {
+      console.log('Result.body of stock quote superagent: ',result.body);
+      let output = {
+        nowPrice: result.body.latestPrice,
+        opening: result.body.open,
+        yrHigh: result.body.week52High,
+        yrLow: result.body.week52Low,
+        mktCap: result.body.marketCap,
+        penRatio: result.body.penRatio,
+        volume: result.body.avgTotalVolume,
+        volumeToday: result.body.latestVolume
+      };
+
+      response.send(output);
+    }).catch(err => console.log('Error in get Stock Info GET: ',err));
+
+}
+
+function getStockDescription(request, response){
+  console.log(request.query);
+  const symbol = request.query.symbol;
+  const rapidGET = 'https://investors-exchange-iex-trading.p.rapidapi.com/stock/';
+
+  superagent(`${rapidGET}/${symbol}/company`)
+    .set('X-RapidAPI-Host', process.env.X_RapidAPI_Host)
+    .set('X-RapidAPI-Key', process.env.X_RapidAPI_Key)
+    .then(result => {
+      console.log('Result.body of stock description superagent: ',result.body);
+      response.send(result.body.description);
+    }).catch(err => console.log('Error in get Stock Info GET: ',err));
+
+}
+
+
+
 // CR for user table
 function createUser(request, response) {
   console.log('REQUEST FROM POST: ',request);
@@ -117,6 +162,7 @@ function getUser(request, response) {
 }
 
 function userDbQuery(username) {
+  console.log('USERNAME FROM GET: ',username);
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
   return client.query(SQL, values).catch((err)=>console.log('Error cath on query',err));
