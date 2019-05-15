@@ -36,7 +36,7 @@ app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
 app.get('/get-stocks-intraday', getStock);
 app.get('/get-stocks-monthly', getStockLong);
 app.get('/get-stocks-quote', getStockName);
-app.get('/get-stock-summary', getStockReport);
+app.get('/get-stocks-summary', getStockReport);
 
 app.post('/stocks', createStock);
 
