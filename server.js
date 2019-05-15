@@ -55,12 +55,15 @@ function getStock(request, response) {
 
 // CR for user table
 function createUser(request, response) {
+  console.log('REQUEST FROM POST: ',request);
   userDbQuery(request.query.username).then(result => {
+    console.log('USERNAME FROM POST: ',request.query.username);
     if (result.rowCount === 0) {
       const SQL = `INSERT INTO users (username) VALUES ($1)`;
       const values = [request.query.username];
       return client.query(SQL, values)
-        .then(result => response.send(result));
+        .then(result => response.send(result))
+        .catch(err => console.log('error on create user sql: ', err));
     }
   });
 }
