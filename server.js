@@ -74,7 +74,7 @@ function getUser(request, response) {
 function userDbQuery(username) {
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
-  return client.query(SQL, values);
+  return client.query(SQL, values).catch((err)=>console.log('Error cath on query',err));
 }
 
 
