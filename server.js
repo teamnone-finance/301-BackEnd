@@ -20,24 +20,20 @@ app.use(express.static('public'));
 app.get('/', (request, response) => {
   response.status(200).send('Connected!');
 });
-// Database Operations
 
+// Database Operations
 app.get('/user', getUser);
 app.post('/user', createUser);
 
-app.get('/portfolio', getAllPortfolio);
-app.get('/portfolio/:portfolio_id', getUniquePortfolio);
-app.post('/portfolio', createPortfolio);
-app.post('/portfolio/edit=:portfolio_id', editPortfolio);
-app.post('/portfolio/delete=:portfolio_id', deletePortfolio);
+app.get('/stock', getStockSingle);
+app.get('/stocks', getStocks);
+app.post('/stocks', createStock);
+app.delete('/stocks', deleteStock);
 
 //middleman APIs
 app.get('/get-stocks-chart', getStockChartRapid);
 app.get('/get-company', getCompanyName);
 app.get('/get-quote', getCompanyQuote);
-
-app.post('/stocks', createStock);
-
 
 //API call to Rapid
 function getStockChartRapid(request, response) {
@@ -60,89 +56,80 @@ function rapidAPIRetrieval(url, response) {
     .set('X-RapidAPI-Host', 'investors-exchange-iex-trading.p.rapidapi.com')
     .set('X-RapidAPI-Key', process.env.RAPID_API_KEY)
     .then(result => response.send(result.body))
-    .catch(err => console.log(err));
+    .catch(err => handleError(err, response));
 }
 
-// CR for user table
+// CRUD for user table
 function createUser(request, response) {
-  console.log('REQUEST FROM POST: ', request);
   userDbQuery(request.query.username).then(result => {
-    console.log('USERNAME FROM POST: ', request.query.username);
     if (result.rowCount === 0) {
       const SQL = `INSERT INTO users (username) VALUES ($1)`;
       const values = [request.query.username];
       return client.query(SQL, values)
-        .then(result => response.send(result))
-        .catch(err => console.log('error on create user sql: ', err));
+        .then(result => response.send(result));
+    } else {
+      response.send(`Username ${request.query.username} already exists in the database`);
     }
-  });
+  })
+    .catch(err => handleError(err, response));
 }
 
 function getUser(request, response) {
-  userDbQuery(request.query.username).then(result => {
-    response.send(result);
-  });
+  userDbQuery(request.query.username)
+    .then(result => response.send(result))
+    .catch(err => handleError(err, response));
 }
 
 function userDbQuery(username) {
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
-  return client.query(SQL, values).catch((err) => console.log('Error cath on query', err));
-}
-
-
-// CRUD for portfolio
-function getAllPortfolio(request, response) {
-  const SQL = `SELECT * FROM portfolio WHERE portfolio.user_id = $1;`;
-  const values = [request.query.user_id];
-  return client.query(SQL, values).then(result => {
-    response.send(result);
-  });
-
-}
-
-function getUniquePortfolio(request, response) {
-  const SQL = `SELECT * FROM portfolio WHERE portfolio.user_id = $1 AND portfolio.id = $2`;
-  const values = [request.query.user_id, request.params.portfolio_id];
-  return client.query(SQL, values).then(result => {
-    response.send(result);
-  });
-}
-
-function createPortfolio(request, response) {
-  const SQL = `INSERT INTO portfolio (portfolio_name, description, user_id) VALUES ($1, $2, $3)`;
-  const values = [request.query.portfolio_name, request.query.description, request.query.username];
-  return client.query(SQL, values).then(result => response.send(result));
-}
-
-function editPortfolio(request, response) {
-  let SQL = `  UPDATE portfolio SET(portfolio_name, description) = ($1, $2) WHERE portfolio.id = $3 AND portfolio.user_id = $4;`;
-  const values = [request.query.portfolio_name, request.query.description, request.params.portfolio_id, request.query.user_id];
-  return client.query(SQL, values).then(result => response.send(result));
-}
-
-function deletePortfolio(request, response) {
-  const SQL = `DELETE FROM portfolio WHERE portfolio.id = $1 AND portfolio.user_id = $2`;
-  const values = [request.params.portfolio_id, request.query.user_id];
-  return client.query(SQL, values).then(result => response.send(result));
+  return client.query(SQL, values);
 }
 
 // CRUD for STOCK
-
-function createStock(request, response) {
-  const SQL = `INSERT INTO stocks (stock_symbol, portfolio_id) VALUES($1, $2)`;
-  const values = [request.query.stock, request.query.portfolio_id];
-  return client.query(SQL, values).then(result => response.send(result));
+function getStockSingle(request, response) {
+  stockDbQuery(request.query.username, request.query.symbol)
+    .then(result => response.send(result))
+    .catch(err => handleError(err, response));
 }
 
+function getStocks(request, response) {
+  const SQL = `SELECT * FROM stocks WHERE stocks.user_id = $1`;
+  const values = [request.query.username];
+  return client.query(SQL, values)
+    .then(result => response.send(result))
+    .catch(err => handleError(err, response));
+}
+function createStock(request, response) {
+  stockDbQuery(request.query.username, request.query.symbol)
+    .then(results => {
+      if (results.rowCount === 0) {
+        const SQL = `INSERT INTO stocks (symbol, user_id) VALUES ($1, $2)`;
+        const values = [request.query.symbol, request.query.username];
+        return client.query(SQL, values).then(result => response.send(result));
+      } else {
+        response.send(`${request.query.symbol} for ${request.query.username} already exists in the database`);
+      }
+    })
+    .catch(err => handleError(err, response));
+}
 
+function deleteStock(request, response) {
+  const SQL = `DELETE FROM stocks WHERE stocks.symbol = $1 AND stocks.user_id = $2`;
+  const values = [request.query.symbol, request.query.username];
+  return client.query(SQL, values)
+    .then(result => response.send(result))
+    .catch(err => handleError(err, response));
+}
 
+function stockDbQuery(username, symbol) {
+  const SQL = `SELECT * FROM stocks WHERE stocks.user_id = $1 and stocks.symbol = $2`;
+  const values = [username, symbol];
+  return client.query(SQL, values);
+}
 
-
-
-
-
-
-
+function handleError(error, response) {
+  response.status(500).send(`Something went wrong - ${error}`);
+}
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
