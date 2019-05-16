@@ -47,6 +47,7 @@ function getCompanyQuote(request, response) {
 }
 
 function getCompanyName(request, response) {
+  // console.log('----inside company name -----');
   const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/company`;
   rapidAPIRetrieval(url, response);
 }
@@ -54,19 +55,26 @@ function getCompanyName(request, response) {
 function rapidAPIRetrieval(url, response) {
   return superagent(url)
     .set('X-RapidAPI-Host', 'investors-exchange-iex-trading.p.rapidapi.com')
-    .set('X-RapidAPI-Key', process.env.RAPID_API_KEY)
-    .then(result => response.send(result.body))
-    .catch(err => handleError(err, response));
+    .set('X-RapidAPI-Key', process.env.X_RapidAPI_Key)
+    .then(result => {
+      // console.log(result);
+      response.send(result.body);
+    })
+    .catch(err => console.log(err));
 }
 
 // CRUD for user table
 function createUser(request, response) {
+  console.log('inside creatUser--------');
   userDbQuery(request.query.username).then(result => {
     if (result.rowCount === 0) {
       const SQL = `INSERT INTO users (username) VALUES ($1)`;
       const values = [request.query.username];
       return client.query(SQL, values)
-        .then(result => response.send(result));
+        .then(result => {
+          console.log('Insert Users Results:', result);
+          response.send(result);
+        });
     } else {
       response.send(`Username ${request.query.username} already exists in the database`);
     }
@@ -76,7 +84,10 @@ function createUser(request, response) {
 
 function getUser(request, response) {
   userDbQuery(request.query.username)
-    .then(result => response.send(result))
+    .then(result => {
+      console.log('userDbQuery result is: ',result);
+      response.send(result);
+    })
     .catch(err => handleError(err, response));
 }
 
