@@ -81,6 +81,7 @@ function getUser(request, response) {
 }
 
 function userDbQuery(username) {
+  console.log('USERNAME FROM GET: ',username);
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
   return client.query(SQL, values);
