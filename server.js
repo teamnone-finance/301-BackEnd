@@ -37,17 +37,23 @@ app.get('/get-quote', getCompanyQuote);
 
 //API call to Rapid
 function getStockChartRapid(request, response) {
-  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/chart/${request.query.time}`;
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${
+    request.query.symbol
+  }/chart/${request.query.time}`;
   rapidAPIRetrieval(url, response);
 }
 
 function getCompanyQuote(request, response) {
-  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/quote`;
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${
+    request.query.symbol
+  }/quote`;
   rapidAPIRetrieval(url, response);
 }
 
 function getCompanyName(request, response) {
-  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${request.query.symbol}/company`;
+  const url = `https://investors-exchange-iex-trading.p.rapidapi.com/stock/${
+    request.query.symbol
+  }/company`;
   rapidAPIRetrieval(url, response);
 }
 
@@ -61,16 +67,18 @@ function rapidAPIRetrieval(url, response) {
 
 // CRUD for user table
 function createUser(request, response) {
-  userDbQuery(request.query.username).then(result => {
-    if (result.rowCount === 0) {
-      const SQL = `INSERT INTO users (username) VALUES ($1)`;
-      const values = [request.query.username];
-      return client.query(SQL, values)
-        .then(result => response.send(result));
-    } else {
-      response.send(`Username ${request.query.username} already exists in the database`);
-    }
-  })
+  userDbQuery(request.query.username)
+    .then(result => {
+      if (result.rowCount === 0) {
+        const SQL = `INSERT INTO users (username) VALUES ($1)`;
+        const values = [request.query.username];
+        return client.query(SQL, values).then(result => response.send(result));
+      } else {
+        response.send(
+          `Username ${request.query.username} already exists in the database`
+        );
+      }
+    })
     .catch(err => handleError(err, response));
 }
 
@@ -81,7 +89,6 @@ function getUser(request, response) {
 }
 
 function userDbQuery(username) {
-  console.log('USERNAME FROM GET: ',username);
   const SQL = `SELECT * FROM users WHERE username = $1`;
   const values = [username];
   return client.query(SQL, values);
@@ -97,7 +104,8 @@ function getStockSingle(request, response) {
 function getStocks(request, response) {
   const SQL = `SELECT * FROM stocks WHERE stocks.user_id = $1`;
   const values = [request.query.username];
-  return client.query(SQL, values)
+  return client
+    .query(SQL, values)
     .then(result => response.send(result))
     .catch(err => handleError(err, response));
 }
@@ -109,7 +117,11 @@ function createStock(request, response) {
         const values = [request.query.symbol, request.query.username];
         return client.query(SQL, values).then(result => response.send(result));
       } else {
-        response.send(`${request.query.symbol} for ${request.query.username} already exists in the database`);
+        response.send(
+          `${request.query.symbol} for ${
+            request.query.username
+          } already exists in the database`
+        );
       }
     })
     .catch(err => handleError(err, response));
@@ -118,7 +130,8 @@ function createStock(request, response) {
 function deleteStock(request, response) {
   const SQL = `DELETE FROM stocks WHERE stocks.symbol = $1 AND stocks.user_id = $2`;
   const values = [request.query.symbol, request.query.username];
-  return client.query(SQL, values)
+  return client
+    .query(SQL, values)
     .then(result => response.send(result))
     .catch(err => handleError(err, response));
 }
